@@ -7,40 +7,70 @@
  */
 
 #import "DetailViewController.h"
-#import <SDWebImage/SDWebImage.h>
+#import <SDWebImage/UIImageView+WebCache.h>
+#import <SDWebImage/FLAnimatedImageView+WebCache.h>
 
 @interface DetailViewController ()
 
-@property (strong, nonatomic) IBOutlet SDAnimatedImageView *imageView;
+@property (strong, nonatomic) IBOutlet FLAnimatedImageView *imageView;
+
+- (void)configureView;
 
 @end
 
 @implementation DetailViewController
 
-- (void)configureView {
-    if (!self.imageView.sd_imageIndicator) {
-        self.imageView.sd_imageIndicator = SDWebImageProgressIndicator.defaultIndicator;
+@synthesize imageURL = _imageURL;
+@synthesize imageView = _imageView;
+
+#pragma mark - Managing the detail item
+
+- (void)setImageURL:(NSURL *)imageURL
+{
+    if (_imageURL != imageURL)
+    {
+        _imageURL = imageURL;
+        [self configureView];
     }
-    [self.imageView sd_setImageWithURL:self.imageURL
-                      placeholderImage:nil
-                               options:SDWebImageProgressiveLoad | SDWebImageScaleDownLargeImages
-                               context:@{SDWebImageContextImageForceDecodePolicy: @(SDImageForceDecodePolicyNever)}
-    ];
-    self.imageView.shouldCustomLoopCount = YES;
-    self.imageView.animationRepeatCount = 0;
 }
 
-- (void)viewDidLoad {
+- (void)configureView
+{
+    if (self.imageURL) {
+        __block UIActivityIndicatorView *activityIndicator;
+        __weak UIImageView *weakImageView = self.imageView;
+        [self.imageView sd_setImageWithURL:self.imageURL
+                          placeholderImage:nil
+                                   options:SDWebImageProgressiveDownload
+                                  progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                      if (!activityIndicator) {
+                                          [weakImageView addSubview:activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray]];
+                                          activityIndicator.center = weakImageView.center;
+                                          [activityIndicator startAnimating];
+                                      }
+                                  }
+                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                     [activityIndicator removeFromSuperview];
+                                     activityIndicator = nil;
+                                 }];
+    }
+}
+
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     [self configureView];
-    self.navigationItem.rightBarButtonItem = [UIBarButtonItem.alloc initWithTitle:@"Toggle Animation"
-                                                                            style:UIBarButtonItemStylePlain
-                                                                           target:self
-                                                                           action:@selector(toggleAnimation:)];
 }
 
-- (void)toggleAnimation:(UIResponder *)sender {
-    self.imageView.isAnimating ? [self.imageView stopAnimating] : [self.imageView startAnimating];
+- (void)viewDidUnload
+{
+    [super viewDidUnload];
+    self.imageView = nil;
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
 }
 
 @end
