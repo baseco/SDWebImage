@@ -1,16 +1,17 @@
 Pod::Spec.new do |s|
   s.name = 'SDWebImage'
-  s.version = '3.8.1'
-  s.osx.deployment_target = '10.8'
-  s.ios.deployment_target = '7.0'
+  s.version = '5.18.5'
+
+  s.osx.deployment_target = '10.11'
+  s.ios.deployment_target = '9.0'
   s.tvos.deployment_target = '9.0'
   s.watchos.deployment_target = '2.0'
 
   s.license = 'MIT'
   s.summary = 'Asynchronous image downloader with cache support with an UIImageView category.'
-  s.homepage = 'https://github.com/rs/SDWebImage'
+  s.homepage = 'https://github.com/SDWebImage/SDWebImage'
   s.author = { 'Olivier Poitrey' => 'rs@dailymotion.com' }
-  s.source = { :git => 'https://github.com/rs/SDWebImage.git', :tag => s.version.to_s }
+  s.source = { :git => 'https://github.com/SDWebImage/SDWebImage.git', :tag => s.version.to_s }
 
   s.description = 'This library provides a category for UIImageView with support for remote '      \
                   'images coming from the web. It provides an UIImageView category adding web '    \
@@ -25,38 +26,22 @@ Pod::Spec.new do |s|
   
   s.default_subspec = 'Core'
 
+  s.pod_target_xcconfig = {
+    'SUPPORTS_MACCATALYST' => 'YES',
+    'DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER' => 'NO'
+  }
+
   s.subspec 'Core' do |core|
-    core.source_files = 'SDWebImage/{NS,SD,UI}*.{h,m}'
-    core.exclude_files = 'SDWebImage/UIImage+WebP.{h,m}'
-    core.tvos.exclude_files = 'SDWebImage/MKAnnotationView+WebCache.*'
+    core.source_files = 'SDWebImage/Core/*.{h,m}', 'WebImage/SDWebImage.h', 'SDWebImage/Private/*.{h,m}'
+    core.private_header_files = 'SDWebImage/Private/*.h'
   end
 
   s.subspec 'MapKit' do |mk|
-    mk.osx.deployment_target = '10.8'
-    mk.ios.deployment_target = '7.0'
+    mk.osx.deployment_target = '10.11'
+    mk.ios.deployment_target = '9.0'
     mk.tvos.deployment_target = '9.0'
-    mk.source_files = 'SDWebImage/MKAnnotationView+WebCache.*'
+    mk.source_files = 'SDWebImageMapKit/MapKit/*.{h,m}'
     mk.framework = 'MapKit'
     mk.dependency 'SDWebImage/Core'
-  end
-
-  s.subspec 'GIF' do |gif|
-    gif.ios.deployment_target = '7.0'
-    gif.source_files = 'SDWebImage/FLAnimatedImage/*.{h,m}'
-    gif.dependency 'SDWebImage/Core'
-    gif.dependency 'FLAnimatedImage', '~> 1.0'
-    gif.xcconfig = {
-      'USER_HEADER_SEARCH_PATHS' => '$(inherited) $(SRCROOT)/FLAnimatedImage/FLAnimatedImage'
-    }
-  end
-
-  s.subspec 'WebP' do |webp|
-    webp.source_files = 'SDWebImage/UIImage+WebP.{h,m}'
-    webp.xcconfig = { 
-      'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) SD_WEBP=1',
-      'USER_HEADER_SEARCH_PATHS' => '$(inherited) $(SRCROOT)/libwebp/src'
-    }
-    webp.dependency 'SDWebImage/Core'
-    webp.dependency 'libwebp'
   end
 end

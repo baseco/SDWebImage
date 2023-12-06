@@ -7,25 +7,21 @@
  */
 
 #import "MasterViewController.h"
-#import <SDWebImage/UIImageView+WebCache.h>
 #import "DetailViewController.h"
-#import <SDWebImage/FLAnimatedImageView.h>
-#import <SDWebImage/FLAnimatedImageView+WebCache.h>
-
+#import <SDWebImage/SDWebImage.h>
 
 @interface MyCustomTableViewCell : UITableViewCell
 
 @property (nonatomic, strong) UILabel *customTextLabel;
-@property (nonatomic, strong) FLAnimatedImageView *customImageView;
+@property (nonatomic, strong) SDAnimatedImageView *customImageView;
 
 @end
-
 
 @implementation MyCustomTableViewCell
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        _customImageView = [[FLAnimatedImageView alloc] initWithFrame:CGRectMake(20.0, 2.0, 60.0, 40.0)];
+        _customImageView = [[SDAnimatedImageView alloc] initWithFrame:CGRectMake(20.0, 2.0, 60.0, 40.0)];
         [self.contentView addSubview:_customImageView];
         _customTextLabel = [[UILabel alloc] initWithFrame:CGRectMake(100.0, 12.0, 200, 20.0)];
         [self.contentView addSubview:_customTextLabel];
@@ -38,22 +34,17 @@
 
 @end
 
+@interface MasterViewController ()
 
+@property (nonatomic, strong) NSMutableArray<NSString *> *objects;
 
-@interface MasterViewController () {
-    NSMutableArray *_objects;
-}
 @end
 
 @implementation MasterViewController
 
-@synthesize detailViewController = _detailViewController;
-
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self)
-    {
+    if (self) {
         self.title = @"SDWebImage";
         self.navigationItem.rightBarButtonItem = [UIBarButtonItem.alloc initWithTitle:@"Clear Cache"
                                                                                 style:UIBarButtonItemStylePlain
@@ -62,52 +53,49 @@
         
         // HTTP NTLM auth example
         // Add your NTLM image url to the array below and replace the credentials
-        [SDWebImageManager sharedManager].imageDownloader.username = @"httpwatch";
-        [SDWebImageManager sharedManager].imageDownloader.password = @"httpwatch01";
+        [SDWebImageDownloader sharedDownloader].config.username = @"httpwatch";
+        [SDWebImageDownloader sharedDownloader].config.password = @"httpwatch01";
+        [[SDWebImageDownloader sharedDownloader] setValue:@"SDWebImage Demo" forHTTPHeaderField:@"AppName"];
+        [SDWebImageDownloader sharedDownloader].config.executionOrder = SDWebImageDownloaderLIFOExecutionOrder;
         
-        _objects = [NSMutableArray arrayWithObjects:
+        self.objects = [NSMutableArray arrayWithObjects:
                     @"http://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.35786508303135633",     // requires HTTP auth, used to demo the NTLM auth
                     @"http://assets.sbnation.com/assets/2512203/dogflops.gif",
                     @"https://raw.githubusercontent.com/liyong03/YLGIFImage/master/YLGIFImageDemo/YLGIFImageDemo/joy.gif",
+                    @"http://apng.onevcat.com/assets/elephant.png",
                     @"http://www.ioncannon.net/wp-content/uploads/2011/06/test2.webp",
                     @"http://www.ioncannon.net/wp-content/uploads/2011/06/test9.webp",
+                    @"http://littlesvr.ca/apng/images/SteamEngine.webp",
+                    @"http://littlesvr.ca/apng/images/world-cup-2014-42.webp",
+                    @"https://isparta.github.io/compare-webp/image/gif_webp/webp/2.webp",
+                    @"https://nokiatech.github.io/heif/content/images/ski_jump_1440x960.heic",
+                    @"https://nokiatech.github.io/heif/content/image_sequences/starfield_animation.heic",
+                    @"https://s2.ax1x.com/2019/11/01/KHYIgJ.gif",
+                    @"https://raw.githubusercontent.com/icons8/flat-color-icons/master/pdf/stack_of_photos.pdf",
+                    @"https://nr-platform.s3.amazonaws.com/uploads/platform/published_extension/branding_icon/275/AmazonS3.png",
+                    @"https://res.cloudinary.com/dwpjzbyux/raw/upload/v1666474070/RawDemo/raw_vebed5.NEF",
+                    @"https://placehold.co/200x200.jpg",
                     nil];
 
-        for (int i=0; i<100; i++) {
-            [_objects addObject:[NSString stringWithFormat:@"https://s3.amazonaws.com/fast-image-cache/demo-images/FICDDemoImage%03d.jpg", i]];
+        for (int i=1; i<25; i++) {
+            // From http://r0k.us/graphics/kodak/, 768x512 resolution, 24 bit depth PNG
+            [self.objects addObject:[NSString stringWithFormat:@"http://r0k.us/graphics/kodak/kodak/kodim%02d.png", i]];
         }
-
     }
-    [SDWebImageManager.sharedManager.imageDownloader setValue:@"SDWebImage Demo" forHTTPHeaderField:@"AppName"];
-    SDWebImageManager.sharedManager.imageDownloader.executionOrder = SDWebImageDownloaderLIFOExecutionOrder;
     return self;
 }
 
-- (void)flushCache
-{
-    [SDWebImageManager.sharedManager.imageCache clearMemory];
-    [SDWebImageManager.sharedManager.imageCache clearDisk];
-}
-							
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+- (void)flushCache {
+    [SDWebImageManager.sharedManager.imageCache clearWithCacheType:SDImageCacheTypeAll completion:nil];
 }
 
 #pragma mark - Table View
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-    return 1;
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.objects.count;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return _objects.count;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString *CellIdentifier = @"Cell";
     
     static UIImage *placeholderImage = nil;
@@ -118,27 +106,36 @@
     MyCustomTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
         cell = [[MyCustomTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell.customImageView.sd_imageTransition = SDWebImageTransition.fadeTransition;
+        cell.customImageView.sd_imageIndicator = SDWebImageActivityIndicator.grayIndicator;
     }
-
-    [cell.customImageView setShowActivityIndicatorView:YES];
-    [cell.customImageView setIndicatorStyle:UIActivityIndicatorViewStyleGray];
     
     cell.customTextLabel.text = [NSString stringWithFormat:@"Image #%ld", (long)indexPath.row];
-    [cell.customImageView sd_setImageWithURL:[NSURL URLWithString:_objects[indexPath.row]]
-                            placeholderImage:placeholderImage
-                                     options:indexPath.row == 0 ? SDWebImageRefreshCached : 0];
+    __weak SDAnimatedImageView *imageView = cell.customImageView;
+    [imageView sd_setImageWithURL:[NSURL URLWithString:self.objects[indexPath.row]]
+                 placeholderImage:placeholderImage
+                          options:0
+                          context:@{SDWebImageContextImageThumbnailPixelSize : @(CGSizeMake(180, 120))}
+                         progress:nil
+                        completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+        SDWebImageCombinedOperation *operation = [imageView sd_imageLoadOperationForKey:imageView.sd_latestOperationKey];
+        SDWebImageDownloadToken *token = operation.loaderOperation;
+        if (@available(iOS 10.0, *)) {
+            NSURLSessionTaskMetrics *metrics = token.metrics;
+            if (metrics) {
+                printf("Metrics: %s download in (%f) seconds\n", [imageURL.absoluteString cStringUsingEncoding:NSUTF8StringEncoding], metrics.taskInterval.duration);
+            }
+        }
+    }];
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (!self.detailViewController)
-    {
-        self.detailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController" bundle:nil];
-    }
-    NSString *largeImageURL = [_objects[indexPath.row] stringByReplacingOccurrencesOfString:@"small" withString:@"source"];
-    self.detailViewController.imageURL = [NSURL URLWithString:largeImageURL];
-    [self.navigationController pushViewController:self.detailViewController animated:YES];
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSString *largeImageURLString = [self.objects[indexPath.row] stringByReplacingOccurrencesOfString:@"small" withString:@"source"];
+    NSURL *largeImageURL = [NSURL URLWithString:largeImageURLString];
+    DetailViewController *detailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController" bundle:nil];
+    detailViewController.imageURL = largeImageURL;
+    [self.navigationController pushViewController:detailViewController animated:YES];
 }
 
 @end
