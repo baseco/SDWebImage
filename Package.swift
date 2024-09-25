@@ -27,6 +27,7 @@ let package = Package(
         //    targets: ["SDWebImageWebP"]
         //)
     ],
+	dependencies: [         .package(url: "https://github.com/Flipboard/FLAnimatedImage.git", from: "1.0.17") ],
     targets: [
         // Core target
         .target(
