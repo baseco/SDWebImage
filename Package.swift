@@ -40,7 +40,7 @@ let package = Package(
                 "MKAnnotationView+WebCache.m",
                 "FLAnimatedImage"
             ],
-            publicHeadersPath: ".",
+            publicHeadersPath: "include",
 
             linkerSettings: [
                 .linkedFramework("ImageIO")
