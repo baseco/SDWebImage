@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "FLAnimatedImage",
-        "repositoryURL": "https://github.com/Flipboard/FLAnimatedImage.git",
+        "repositoryURL": "https://github.com/baseco/FLAnimatedImage.git",
         "state": {
           "branch": null,
-          "revision": "d4f07b6f164d53c1212c3e54d6460738b1981e9f",
-          "version": "1.0.17"
+          "revision": "a57dae359597c89e49a2095de79a15709916a694",
+          "version": null
         }
       }
     ]
